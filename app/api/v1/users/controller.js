@@ -88,8 +88,7 @@ module.exports = {
 			delete users._doc.resetPasswordToken;
 			delete users._doc.__v;
 
-			const result = { message: 'Success!!! Users Created.', data: users };
-			return res.status(StatusCodes.OK).json(result)
+			return res.status(StatusCodes.OK).json({ message: 'Success!!! Users Created.', data: users })
 		} catch (error) {
 			next(error)
 		}
@@ -118,8 +117,7 @@ module.exports = {
 			delete users._doc.password;
 			delete users._doc.otp;
 
-			const result = { message: 'Updated Data Users Successfully', data: users };
-			return res.status(StatusCodes.OK).json(result)
+			return res.status(StatusCodes.OK).json({ message: 'Updated Data Users Successfully', data: users })
 		} catch (error) {
 			next(error)
 		}
@@ -133,8 +131,7 @@ module.exports = {
 			const users = await User.findByIdAndDelete(id);
 			if (!users) throw new BadRequestError('Users Not Found');
 
-			const result = { message: 'Success!!! Users removed.', data: users };
-			return res.status(StatusCodes.OK).json(result)
+			return res.status(StatusCodes.OK).json({ message: 'Success!!! Users removed.', data: users })
 		}
 		catch (error) {
 			next(error)
