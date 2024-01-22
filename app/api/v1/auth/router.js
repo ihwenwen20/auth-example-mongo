@@ -9,5 +9,6 @@ router.post('/refresh-token', authController.refreshToken);
 router.post('/logout', authenticate, authController.logout);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password/:token', authController.resetPassword);
+router.post('/brevowebhook', authController.brevoWebhook);
 
 module.exports = router;

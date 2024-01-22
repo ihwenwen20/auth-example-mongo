@@ -22,6 +22,16 @@ const userSchema = new mongoose.Schema({
 		required: [true, 'Password is required'],
 	},
 	refreshToken: String,
+	otp: {
+		type: String,
+		required: true,
+		default: () => Math.floor(Math.random() * 999999) + new Date().getTime() % 999999,
+	},
+	status: {
+		type: String,
+		enum: ['Active', 'Inactive'],
+		default: 'Inactive',
+	},
 	isAdmin: {
 		type: Boolean,
 		default: false,

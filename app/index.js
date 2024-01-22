@@ -3,6 +3,7 @@ const helmet = require("helmet");
 const RateLimit = require("express-rate-limit");
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const os = require('os');
 const dotenv = require('dotenv');
@@ -47,6 +48,7 @@ app.use(bodyParser.json());
 app.use(helmet());
 app.use(limiter);
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // use router
 app.get('/', (req, res) => {

@@ -7,23 +7,37 @@ module.exports = {
 	getAllUsers: async (req, res, next) => {
 		console.log('token', req.user)
 		try {
-			const page = parseInt(req.query.page) || 1;
+			const skip = parseInt(req.query.skip) || 1;
 			const limit = parseInt(req.query.limit) || 10;
-			const search = req.query.search_query || '';
-			// const offset = limit * page;
+			const search = req.query.s || '';
+			// const offset = limit * skip;
+			const selectFields = req.query.select;
 
 			const totalRows = await User.countDocuments();
 			const totalPage = Math.ceil(totalRows / limit);
 
-			const user = await User.find({
+			let query = {
 				$or: [
 					{ name: { $regex: search, $options: 'i' } },
 					{ email: { $regex: search, $options: 'i' } }
 				]
-			})
+			};
+
+			const projection = {}; // Define an empty projection object
+
+			// If selectFields is provided, split the string and include only those fields in the projection
+			if (selectFields) {
+				const selectedFieldsArray = selectFields.split(',');
+				selectedFieldsArray.forEach(field => {
+					projection[field] = 1;
+				});
+			}
+
+			const user = await User.find(query)
+				.select(projection) // Apply the projection
 				.lean()
 				// .skip(offset)
-				.skip(limit * (page - 1))
+				.skip(limit * (skip - 1))
 				.limit(limit)
 				.sort({ _id: -1 });
 
@@ -40,9 +54,10 @@ module.exports = {
 			});
 
 			const result = {
+				statusCode: StatusCodes.OK, message: 'Get List Users Succes.',
 				data: arrayUsers,
-				page,
 				limit,
+				skip,
 				totalRows,
 				totalPage,
 			};
@@ -63,7 +78,7 @@ module.exports = {
 			delete user._doc.resetPasswordExpires;
 			delete user._doc.resetPasswordToken;
 			delete user._doc.__v;
-			return res.status(StatusCodes.OK).json({ data: user });
+			return res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: 'Get Details Users Success.', data: user });
 		} catch (error) {
 			next(error)
 		}
@@ -77,9 +92,9 @@ module.exports = {
 			const check = await User.findOne({ username, email });
 			if (check) throw new DuplicateError(username, email);
 
-			const users = await User.create(
+			const users = await User.create({
 				...req.body
-			);
+			});
 
 			delete users._doc.password;
 			delete users._doc.otp;
@@ -88,7 +103,7 @@ module.exports = {
 			delete users._doc.resetPasswordToken;
 			delete users._doc.__v;
 
-			return res.status(StatusCodes.OK).json({ message: 'Success!!! Users Created.', data: users })
+			return res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: 'Success!!! Users Created.', data: users })
 		} catch (error) {
 			next(error)
 		}
@@ -116,8 +131,9 @@ module.exports = {
 
 			delete users._doc.password;
 			delete users._doc.otp;
+			delete users._doc.__v;
 
-			return res.status(StatusCodes.OK).json({ message: 'Updated Data Users Successfully', data: users })
+			return res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: 'Updated Data Users Successfully', data: users })
 		} catch (error) {
 			next(error)
 		}
@@ -131,7 +147,7 @@ module.exports = {
 			const users = await User.findByIdAndDelete(id);
 			if (!users) throw new BadRequestError('Users Not Found');
 
-			return res.status(StatusCodes.OK).json({ message: 'Success!!! Users removed.', data: users })
+			return res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: `Success!!! Users ${users.username} removed.`, data: {} })
 		}
 		catch (error) {
 			next(error)
@@ -154,7 +170,7 @@ module.exports = {
 			user.password = password;
 
 			await user.save();
-			return res.status(StatusCodes.OK).json({ message: 'Success!!! Updated Data.', data: user });
+			return res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: 'Success!!! Updated Data.', data: user });
 		} catch (error) {
 			next(error)
 		}
@@ -174,7 +190,7 @@ module.exports = {
 			// user.subscription.status = 'premium';
 
 			await user.save();
-			res.send('Langganan berhasil diperpanjang.');
+			return res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: 'Langganan berhasil diperpanjang.', data: user });
 		} catch (error) {
 			next(error)
 		}
@@ -210,7 +226,6 @@ module.exports = {
 			delete result._doc.otp;
 		});
 
-		return { message: `Success! Updated status for ${results.length} users.`, data: results };
+		return { statusCode: StatusCodes.OK, message: `Success! Updated status for ${results.length} users.`, data: results };
 	}
 }
-

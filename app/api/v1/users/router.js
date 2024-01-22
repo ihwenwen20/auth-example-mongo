@@ -5,6 +5,7 @@ const { isAdmin, authenticate } = require('../../../middleware/verification');
 
 router.get('/users', authenticate, isAdmin, userController.getAllUsers);
 router.get('/users/:id', authenticate, isAdmin, userController.getUserById);
+router.post('/users', authenticate, isAdmin, userController.createUser);
 router.put('/users/:id', authenticate, isAdmin, userController.updateUser);
 router.delete('/users/:id', authenticate, isAdmin, userController.deleteUser);
 

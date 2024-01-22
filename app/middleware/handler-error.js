@@ -1,5 +1,6 @@
 const { StatusCodes } = require('http-status-codes');
 const DuplicateError = require('../errors/duplicateError');
+const jwt = require('jsonwebtoken');
 
 const errorHandlerMiddleware = (err, req, res, next) => {
 	// console.log('err from middleware', err);
@@ -37,6 +38,10 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 		customError.statusCode = StatusCodes.UNAUTHORIZED;
 	}
 
+	if (err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError) {
+		customError.message = err.message;
+		customError.statusCode = err.statusCode;
+	}
 	if (err instanceof DuplicateError) {
 		customError.message = err.message;
 		customError.statusCode = err.statusCode;
